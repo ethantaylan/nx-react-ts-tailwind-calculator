@@ -1,4 +1,5 @@
+import { Playground } from './components/Playground';
 
-export function App() {
-  return <h1 className="bg-sky-500">Hello world</h1>;
-}
+export const App = () => {
+  return <Playground />;
+};
