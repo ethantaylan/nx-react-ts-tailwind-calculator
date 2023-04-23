@@ -8,19 +8,75 @@ interface KeypadProps {
 }
 
 export const Keypad: React.FC<KeypadProps> = () => {
-  const handleKeysFirstValue = (key: number | undefined) => {
-    console.log(key);
+  const [arrayOfFirstValue, setArrayOfFirstValue] = React.useState<any>([]);
+  const [arrayOfSecondValue, setArrayOfSecondValue] = React.useState<any>([]);
+  const [equal, setEqual] = React.useState<number>();
+  const [operator, setOperator] = React.useState<string>();
+  const [toSecondValue, setToSecondValue] = React.useState<boolean>();
+  const [showEqual, setShowEqual] = React.useState<boolean | undefined>(false);
+  const [decimal, setDecimal] = React.useState<boolean>(false);
+
+  const handleValues = (key: number | undefined | string) => {
+    if (key === '.') {
+      if (!decimal) {
+        setArrayOfFirstValue([...arrayOfFirstValue, key]);
+        setDecimal(true);
+      }
+    } else {
+      if (!toSecondValue) {
+        setArrayOfFirstValue([...arrayOfFirstValue, key]);
+      } else {
+        setArrayOfSecondValue([...arrayOfSecondValue, key]);
+      }
+    }
   };
 
-  const firstValue = 12;
-  const secondValue = 2;
+  console.log(arrayOfFirstValue);
+
+  const firstValue = parseFloat(arrayOfFirstValue.join(''));
+  const secondValue = parseFloat(arrayOfSecondValue.join(''));
+
+  React.useEffect(() => {
+    if(showEqual) {
+      setDecimal(false)
+      setToSecondValue(false)
+    }
+  }, [showEqual])
+
+  React.useEffect(() => {
+    switch (operator) {
+      case '+':
+        setEqual(firstValue + secondValue);
+        setOperator('+');
+        setToSecondValue(true);
+        break;
+      case '-':
+        setEqual(firstValue - secondValue);
+        setOperator('-');
+        setToSecondValue(true);
+        break;
+      case '*':
+        setEqual(firstValue * secondValue);
+        setOperator('*');
+        setToSecondValue(true);
+
+        break;
+      case '/':
+        setEqual(firstValue / secondValue);
+        setOperator('/');
+        setToSecondValue(true);
+        break;
+      default:
+        setEqual(undefined);
+    }
+  }, [firstValue, secondValue, operator, arrayOfFirstValue.length]);
 
   return (
     <React.Fragment>
       <Screen
-        equal={firstValue + secondValue}
+        equal={showEqual && equal}
         firstValue={firstValue}
-        operation={'+'}
+        operator={operator}
         secondValue={secondValue}
       />
       <div
@@ -30,9 +86,15 @@ export const Keypad: React.FC<KeypadProps> = () => {
         <div className="grid h-full w-full grid-cols-4 gap-2">
           {keys.map((key, index) => (
             <button
-              onClick={() => handleKeysFirstValue(key.keyValue)}
+              onClick={() => {
+                setShowEqual(key.isEqual);
+                if (!operator) {
+                  setOperator(key.operator);
+                }
+                handleValues(key.keyValue || key.comma);
+              }}
               key={index}
-              className={`rounded-full bg-slate-800 text-lg font-semibold hover:bg-slate-900 ${key.custom} ${transition}`}
+              className={`rounded-full text-lg font-semibold hover:bg-slate-900 ${key.custom} ${transition}`}
             >
               {key.key}
             </button>
